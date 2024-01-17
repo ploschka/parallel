@@ -3,6 +3,12 @@ CC=gcc
 CCFLAG=-O3 -pthread
 CPPFLAGS=-fopenmp -O3 -pthread --std=c++20
 
+all: 1 2
+
+run: all
+	./1
+	./2
+
 clean1:
 	rm 1 lib1.o -f
 
