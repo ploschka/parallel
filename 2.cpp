@@ -7,6 +7,7 @@
 #include <mutex>
 #include <ranges>
 #include <cmath>
+#include <algorithm>
 
 // Рандомизация данных с помощью
 // Линейного конгруэнтного генератора
@@ -144,7 +145,7 @@ bool randomize_test(size_t n)
 
 typedef struct profiling_results_t
 {
-    bool result;
+    double result;
     double time, speedup, efficiency;
     unsigned T;
 } profiling_results_t;
@@ -158,9 +159,11 @@ auto run_experiment(size_t n)
         using namespace std::chrono;
         res_table.emplace_back();
         auto &rr = res_table.back();
+        std::vector<uint32_t> v(n);
         set_num_threads(T);
+        uint32_t seed = time(NULL);
         auto t1 = steady_clock::now();
-        rr.result = randomize_test(n);
+        rr.result = randomize_vector_par(v.data(), n, seed);
         auto t2 = steady_clock::now();
         rr.time = duration_cast<milliseconds>(t2 - t1).count();
         rr.speedup = res_table.front().time / rr.time;
@@ -173,11 +176,12 @@ auto run_experiment(size_t n)
 int main()
 {
     size_t n = 1u << 25;
-    const char *p = "%u,%u,%f,%f\n";
+    const char *p = "%u,%f,%f,%f\n";
 
     auto res = run_experiment(n);
 
     auto file = fopen("file2.csv", "w");
+    fprintf(file, "T,result,speedup,efficiency\n");
 
     for (auto &i : res)
     {
